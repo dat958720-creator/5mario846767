@@ -1,4 +1,3 @@
-
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -8,7 +7,21 @@ st.set_page_config(
     layout="centered"
 )
 
-# Khởi tạo trạng thái game trong session_state để quản lý màn hình Home/Playing
+# Khởi tạo từ điển cấu hình độ khó chung để dùng cho cả 2 màn hình
+diff_params = {
+    "Dễ (Easy)": {"speed": 5, "coin_size": 12, "has_enemy": False, "enemy_speed": 0},
+    "Trung bình (Medium)": {"speed": 4, "coin_size": 10, "has_enemy": False, "enemy_speed": 0},
+    "Khó (Hard - Có Goomba)": {"speed": 3.5, "coin_size": 8, "has_enemy": True, "enemy_speed": 2}
+}
+
+char_colors = {
+    "Mario (Đỏ)": "#e52521",
+    "Luigi (Xanh lá)": "#4caf50",
+    "Peach (Hồng)": "#ff4081",
+    "Toad (Xanh dương)": "#00bcd4"
+}
+
+# Khởi tạo trạng thái game trong session_state
 if "game_started" not in st.session_state:
     st.session_state.game_started = False
 
@@ -22,28 +35,14 @@ if not st.session_state.game_started:
     with col1:
         character = st.selectbox(
             "👤 Chọn Nhân vật:",
-            ["Mario (Đỏ)", "Luigi (Xanh lá)", "Peach (Hồng)", "Toad (Xanh dương)"]
+            list(char_colors.keys())
         )
 
     with col2:
         difficulty = st.selectbox(
             "🎯 Chọn Độ khó:",
-            ["Dễ (Easy)", "Trung bình (Medium)", "Khó (Hard - Có Goomba)"]
+            list(diff_params.keys())
         )
-
-    # Ánh xạ màu sắc & thông số nhân vật/độ khó
-    char_colors = {
-        "Mario (Đỏ)": "#e52521",
-        "Luigi (Xanh lá)": "#4caf50",
-        "Peach (Hồng)": "#ff4081",
-        "Toad (Xanh dương)": "#00bcd4"
-    }
-
-    diff_params = {
-        "Dễ (Easy)": {"speed": 5, "coin_size": 12, "has_enemy": False, "enemy_speed": 0},
-        "Trung bình (Medium)": {"speed": 4, "coin_size": 10, "has_enemy": False, "enemy_speed": 0},
-        "Khó (Hard - Có Goomba)": {"speed": 3.5, "coin_size": 8, "has_enemy": True, "enemy_speed": 2}
-    }
 
     selected_color = char_colors[character]
     current_param = diff_params[difficulty]
@@ -52,6 +51,7 @@ if not st.session_state.game_started:
     if st.button("🚀 BẮT ĐẦU CHƠI", type="primary", use_container_width=True):
         st.session_state.game_started = True
         st.session_state.character = character
+        st.session_state.difficulty_name = difficulty
         st.session_state.color = selected_color
         st.session_state.param = current_param
         st.rerun()
@@ -59,13 +59,14 @@ if not st.session_state.game_started:
 # --- MÀN HÌNH CHƠI GAME ---
 else:
     char_name = st.session_state.character
+    diff_name = st.session_state.difficulty_name
     char_color = st.session_state.color
     param = st.session_state.param
 
     # Header hiển thị thông tin và nút quay lại Home
     col_info, col_btn = st.columns([3, 1])
     with col_info:
-        st.subheader(f"🎮 Nhân vật: {char_name} | Độ khó: {list(diff_params.keys())[list(diff_params.values()).index(param)]}")
+        st.subheader(f"🎮 Nhân vật: {char_name} | Độ khó: {diff_name}")
     with col_btn:
         if st.button("🏠 Về Trang Chủ"):
             st.session_state.game_started = False
@@ -258,7 +259,6 @@ else:
                 // Nhân vật
                 ctx.fillStyle = player.color;
                 ctx.fillRect(player.x, player.y, player.width, player.height);
-                // Mũ & áo trang trí đơn giản
                 ctx.fillStyle = "#000000";
                 ctx.fillRect(player.x + 4, player.y + 20, player.width - 8, 15);
 
